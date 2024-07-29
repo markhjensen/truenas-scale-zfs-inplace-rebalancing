@@ -1,3 +1,7 @@
+https://www.reddit.com/r/truenas/comments/16qk590/rebalance_data_after_adding_vdev_to_pool/
+https://www.truenas.com/community/threads/vdev-rebalancing.105152/
+
+
 # zfs-inplace-rebalancing
 Simple bash script to rebalance pool data between all mirrors when adding vdevs to a pool.
 
