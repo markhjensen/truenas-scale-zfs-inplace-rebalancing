@@ -69,11 +69,11 @@ function rebalance () {
     fi
 
     current_index="$((current_index + 1))"
-    progress_percent=$(perl -e "printf('%0.2f', ${current_index}*100/${file_count})") 
-    color_echo "${Cyan}" "Progress -- Files: ${current_index}/${file_count} (${progress_percent}%)" 
+    progress_percent=$((current_index * 100 / file_count))
+    color_echo "${Cyan}" "Progress -- Files: ${current_index}/${file_count} (${progress_percent}%)"
 
     if [[ ! -f "${file_path}" ]]; then
-        color_echo "${Yellow}" "File is missing, skipping: ${file_path}" 
+        color_echo "${Yellow}" "File is missing, skipping: ${file_path}"
     fi
 
     if [ "${passes_flag}" -ge 1 ]; then
@@ -84,7 +84,7 @@ function rebalance () {
         return
         fi
     fi
-   
+ 
     tmp_extension=".balance"
     tmp_file_path="${file_path}${tmp_extension}"
 
@@ -92,20 +92,21 @@ function rebalance () {
     if [[ "${OSTYPE,,}" == "linux-gnu"* ]]; then
         # Linux
 
-        # --reflink=never -- force standard copy (see ZFS Block Cloning)
-        # -a -- keep attributes, includes -d -- keep symlinks (dont copy target) and 
-        #       -p -- preserve ACLs to
+        # -a -- keep attributes
+        # -d -- keep symlinks (dont copy target)
         # -x -- stay on one system
-        cp --reflink=never -ax "${file_path}" "${tmp_file_path}"
+        # -p -- preserve ACLs too
+        cp -adxp "${file_path}" "${tmp_file_path}"
     elif [[ "${OSTYPE,,}" == "darwin"* ]] || [[ "${OSTYPE,,}" == "freebsd"* ]]; then
         # Mac OS
         # FreeBSD
 
-        # -a -- Archive mode.  Same as -RpP. Includes preservation of modification 
-        #       time, access time, file flags, file mode, ACL, user ID, and group 
-        #       ID, as allowed by permissions.
+        # -a -- Archive mode.  Same as -RpP.
         # -x -- File system mount points are not traversed.
-        cp -ax "${file_path}" "${tmp_file_path}"
+        # -p -- Cause cp to preserve the following attributes of each source file
+        #       in the copy: modification time, access time, file flags, file mode,
+        #       ACL, user ID, and group ID, as allowed by permissions.
+        cp -axp "${file_path}" "${tmp_file_path}"
     else
         echo "Unsupported OS type: $OSTYPE"
         exit 1
@@ -223,12 +224,12 @@ while true ; do
         *)
             break
         ;;
-    esac 
+    esac
 done;
 
 root_path=$1
 
-color_echo "$Cyan" "Start rebalancing $(date):"
+color_echo "$Cyan" "Start rebalancing:"
 color_echo "$Cyan" "  Path: ${root_path}"
 color_echo "$Cyan" "  Rebalancing Passes: ${passes_flag}"
 color_echo "$Cyan" "  Use Checksum: ${checksum_flag}"
